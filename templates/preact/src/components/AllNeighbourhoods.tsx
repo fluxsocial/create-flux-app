@@ -1,5 +1,5 @@
 import { useEffect, useState } from "preact/hooks";
-import { getAd4mClient } from "@perspect3vism/ad4m-connect/dist/utils";
+import { getAd4mClient } from "@perspect3vism/ad4m-connect/utils";
 import { Ad4mClient, PerspectiveProxy } from "@perspect3vism/ad4m";
 
 export default function AllCommunities() {
