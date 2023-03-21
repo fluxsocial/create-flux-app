@@ -9,6 +9,9 @@
       html {
         box-sizing: border-box;
       }
+      body {
+        margin: 0;
+      }
       *,
       *:before,
       *:after {
@@ -17,6 +20,16 @@
       flux-app {
         height: 100vh;
         display: block;
+      }
+      .perspective-picker {
+        position: fixed;
+        top: 0;
+        right: 0;
+        margin: var(--j-space-800);
+        font-size: var(--j-font-size-500);
+        padding: var(--j-space-200);
+        border-radius: var(--j-border-radius);
+        border-color: var(--j-border-color-strong);
       }
     </style>
     <link
@@ -28,11 +41,15 @@
   <body>
     <flux-app></flux-app>
 
+    <select class="perspective-picker" id="perspective-picker"></select>
+
     <script type="module">
       import Ad4mConnectUI from "@perspect3vism/ad4m-connect";
       import App from "./src/main.ts";
 
       window.__APP_VERSION__ = "test";
+
+      const selectEl = document.getElementById("perspective-picker");
 
       const ui = Ad4mConnectUI({
         appName: "Flux App",
@@ -41,24 +58,36 @@
         capabilities: [{ with: { domain: "*", pointers: ["*"] }, can: ["*"] }],
       });
 
-      ui.connect().then(() => {
-        initApp();
+      ui.connect().then(async (client) => {
         customElements.define("flux-app", App);
+
+        // Add default option
+        const c = document.createElement("option");
+        c.text = "Select a perspective";
+        c.value = "";
+        selectEl.options.add(c, 1);
+
+        const perspectives = await client.perspective.all();
+
+        for (let i = 0; i < perspectives.length; i++) {
+          const perspective = perspectives[i];
+          const c = document.createElement("option");
+          c.text = perspective.name || "Untitled perspective";
+          c.value = perspective.uuid;
+          selectEl.options.add(c, 1);
+        }
+
+        const changeSelected = (e) => {
+          const app = document.querySelector("flux-app");
+          const perspective = perspectives.find(
+            (p) => p.uuid === e.target.value
+          );
+
+          app.perspective = perspective;
+        };
+
+        selectEl.addEventListener("change", changeSelected);
       });
-
-      window.addEventListener("popstate", initApp);
-
-      function initApp() {
-        // Extract perspectiveUuid and source from the URL path
-        const [_, uuid, source] = document.location.pathname.split("/");
-
-        console.log({ _, uuid, source });
-
-        // Set perspective and source on the app
-        const app = document.querySelector("flux-app");
-        app.setAttribute("perspective", decodeURIComponent(uuid));
-        app.setAttribute("source", decodeURIComponent(source));
-      }
     </script>
   </body>
 </html>

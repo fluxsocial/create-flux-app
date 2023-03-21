@@ -1,0 +1,20 @@
+.appContainer {
+    margin: 0 auto;
+    padding: var(--j-space-800);
+    width: 100%;
+    max-width: 800px;;
+}
+
+.perspective {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: max-content;
+    gap: var(--j-space-200);
+    margin-top: var(--j-space-400);
+    padding: var(--j-space-500);
+    background-color: #0000000d;
+    text-decoration: none;
+    color: currentColor;
+    border: 1px solid var(--j-color-ui-50);
+    border-radius: var(--j-border-radius);
+}
