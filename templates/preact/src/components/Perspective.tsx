@@ -49,10 +49,15 @@ export default function Perspective({ perspective }: Props) {
 
             <j-text variant="label">Shared URL</j-text>
             <j-text variant="body" color="black">
-              {perspective.sharedUrl}
+              {perspective.sharedUrl || "No shared URL"}
             </j-text>
 
             <j-text variant="label">Subject classes:</j-text>
+            {(!subjects || subjects.length < 1) && (
+              <j-text variant="body" color="black">
+                No subject classes
+              </j-text>
+            )}
             <ul>
               {subjects?.map((s) => (
                 <li key={s}>{s}</li>
@@ -62,7 +67,7 @@ export default function Perspective({ perspective }: Props) {
         ) : (
           <>
             <j-text variant="body" nomargin>
-              Select a perspective or create a new one
+              Select a perspective to see details
             </j-text>
           </>
         )}

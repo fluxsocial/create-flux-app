@@ -25,11 +25,19 @@
         position: fixed;
         top: 0;
         right: 0;
-        margin: var(--j-space-800);
+        display: flex;
+        align-items: center;
+        gap: var(--j-space-300);
+        margin: var(--j-space-400);
+        padding: var(--j-space-400);
+        background: var(--j-color-ui-100);
+        border-radius: var(--j-border-radius);
+      }
+      .perspective-picker > select {
         font-size: var(--j-font-size-500);
-        padding: var(--j-space-200);
         border-radius: var(--j-border-radius);
         border-color: var(--j-border-color-strong);
+        padding: var(--j-space-200);
       }
     </style>
     <link
@@ -41,7 +49,11 @@
   <body>
     <flux-app></flux-app>
 
-    <select class="perspective-picker" id="perspective-picker"></select>
+    <div class="perspective-picker">
+      <select id="perspective-picker"></select>
+      <j-text nomargin>or</j-text>
+      <j-button size="sm" id="create-perspective">Create new</j-button>
+    </div>
 
     <script type="module">
       import Ad4mConnectUI from "@perspect3vism/ad4m-connect";
@@ -50,6 +62,7 @@
       window.__APP_VERSION__ = "test";
 
       const selectEl = document.getElementById("perspective-picker");
+      const buttonEl = document.getElementById("create-perspective");
 
       const ui = Ad4mConnectUI({
         appName: "Flux App",
@@ -61,23 +74,31 @@
       ui.connect().then(async (client) => {
         customElements.define("flux-app", App);
 
-        // Add default option
-        const c = document.createElement("option");
-        c.text = "Select a perspective";
-        c.value = "";
-        selectEl.options.add(c, 1);
+        const populateSelect = async () => {
+          const perspectives = await client.perspective.all();
 
-        const perspectives = await client.perspective.all();
+          // Remove old options
+          while (selectEl.firstChild) {
+            selectEl.removeChild(selectEl.firstChild);
+          }
 
-        for (let i = 0; i < perspectives.length; i++) {
-          const perspective = perspectives[i];
+          // Add default option
           const c = document.createElement("option");
-          c.text = perspective.name || "Untitled perspective";
-          c.value = perspective.uuid;
+          c.text = "Select a perspective";
+          c.value = "";
           selectEl.options.add(c, 1);
-        }
 
-        const changeSelected = (e) => {
+          for (let i = 0; i < perspectives.length; i++) {
+            const perspective = perspectives[i];
+            const c = document.createElement("option");
+            c.text = perspective.name || "Untitled perspective";
+            c.value = perspective.uuid;
+            selectEl.options.add(c, 1);
+          }
+        };
+
+        const changeSelected = async (e) => {
+          const perspectives = await client.perspective.all();
           const app = document.querySelector("flux-app");
           const perspective = perspectives.find(
             (p) => p.uuid === e.target.value
@@ -86,7 +107,20 @@
           app.perspective = perspective;
         };
 
+        const createNewPerspective = async () => {
+          const app = document.querySelector("flux-app");
+          const newPerspective = await client.perspective.add("My perspective");
+
+          await populateSelect();
+
+          app.perspective = newPerspective;
+          selectEl.value = newPerspective.uuid;
+        };
+
+        await populateSelect();
+
         selectEl.addEventListener("change", changeSelected);
+        buttonEl.addEventListener("click", createNewPerspective);
       });
     </script>
   </body>
